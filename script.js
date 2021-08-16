@@ -1,52 +1,67 @@
-(function () {
-  const Gameboard = {
-    gameboard: [],
+const boardSquare = document.getElementsByClassName("board-square");
 
-    // addMarker calls player to add marker into array, gets the div target of the click
-    // and calls the render function with the divs number
+const gameboard = [];
+let counter = 0;
 
-    addMarker: function (marker) {
-      const boardSquare = document.getElementsByClassName("board-square");
-      markTheSpot = (event) => {
-        const spot = event.target;
-        const spotNumber = spot.getAttribute("data-number");
-        Gameboard.gameboard.push(marker);
-        console.log(this.gameboard);
-        Gameboard.render(boardSquare, spotNumber);
-      };
-      for (i = 0; i < boardSquare.length; i++) {
-        boardSquare[i].addEventListener("click", markTheSpot);
-      }
-    },
+// Player is pushing its marker into the Gameboard array
+// Created players
 
-    // render takes the div clicked (spot) and puts the latest array marker in that div
-    render: function (boardSquare, spotNumber) {
-      const score = this.gameboard;
-      for (i = 0; i < score.length; i++) {
-        console.log((boardSquare[spotNumber].textContent = score[i]));
-      }
-      Gameboard.whosTurn(score);
-    },
-
-    // trying to add function to control flow of the game
-    whosTurn: function (score) {
-      if (score[0] === "X" || score[score.length - 1] === "X") {
-        player2.turn();
-      } else player1.turn();
-    },
+const Player = (marker) => {
+  const turn = () => {
+    gameboard.push(marker);
   };
+  return { turn };
+};
 
-  // Player is pushing its marker into the Gameboard array
+const player1 = Player("X");
+const player2 = Player("O");
 
-  const Player = (marker) => {
-    const turn = () => {
-      Gameboard.addMarker(marker);
-    };
-    return { turn };
-  };
+// addMarker calls player to add marker into array, gets the div target of the click
+// and calls the render function with the divs number
 
-  const player1 = Player("X");
-  const player2 = Player("O");
+function addMarker(event) {
+  const spot = event.target;
+  const spotNumber = spot.getAttribute("data-number");
+  console.log(gameboard);
+  render(spotNumber);
+}
 
-  player1.turn();
-})();
+// render takes the div clicked (spot) and puts the latest array marker in that div
+
+render = (spotNumber) => {
+  if (
+    boardSquare[spotNumber].textContent === "X" ||
+    boardSquare[spotNumber].textContent === "O"
+  ) {
+    gameboard.splice(-1);
+    counter--;
+    boardSquare[spotNumber].removeEventListener("click", runLoop);
+  } else {
+    return (boardSquare[spotNumber].textContent =
+      gameboard[gameboard.length - 1]);
+  }
+};
+
+runLoop = (event) => {
+  counter++;
+
+  // to control flow of the game
+
+  if (counter % 2 === 0) {
+    player2.turn();
+  } else player1.turn();
+
+  addMarker(event);
+
+  if (counter === 9) {
+    console.log("stop");
+  }
+};
+
+function start() {
+  for (i = 0; i < boardSquare.length; i++) {
+    boardSquare[i].addEventListener("click", runLoop);
+  }
+}
+
+start();
