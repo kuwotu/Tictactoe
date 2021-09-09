@@ -5,20 +5,12 @@ const playerChoiceIntro = document.querySelector(
   "#player-instructions-container"
 );
 const displayBoard = document.querySelector("#container");
+const gameResultMessage = document.querySelector("#game-result-message");
+const gameOver = document.getElementById("restart-container");
+const restartButton = document.getElementById("restart-button");
 
-const gameboard = [];
+let gameboard = [];
 let whosTurnIsIt = 0;
-
-const winningCombinations = [
-  [0, 1, 2],
-  [3, 4, 5],
-  [6, 7, 8],
-  [0, 3, 6],
-  [1, 4, 7],
-  [2, 5, 8],
-  [0, 4, 8],
-  [2, 4, 6],
-];
 
 const Player = (marker) => {
   const turn = () => {
@@ -60,13 +52,10 @@ choiceButton.forEach((button) => button.addEventListener("click", gameIntro));
 
 function start(result) {
   for (i = 0; i < boardSquare.length; i++) {
-    boardSquare[i].addEventListener(
-      "click",
-      function (event) {
-        playGame(result, event);
-      },
-      { once: true }
-    );
+    boardSquare[i].addEventListener("click", function (event) {
+      playGame(result, event);
+      console.log("im awake");
+    });
   }
 }
 
@@ -78,11 +67,6 @@ playGame = (result, event) => {
   } else result[0].turn();
 
   addMarker(event);
-
-  if (whosTurnIsIt === 9) {
-    console.log("stop");
-    removeClick();
-  }
 };
 
 // addMarker calls player to add marker into array, gets the div target of the click
@@ -91,14 +75,16 @@ playGame = (result, event) => {
 function addMarker(event) {
   const spot = event.target;
   const spotNumber = spot.getAttribute("data-number");
+  if (
+    boardSquare[spotNumber].textContent === "X" ||
+    boardSquare[spotNumber].textContent === "O"
+  ) {
+    whosTurnIsIt--;
+    return;
+  }
   boardSquare[spotNumber].textContent = gameboard[gameboard.length - 1];
   checkForWinner();
 }
-
-removeClick = () => {
-  let recreateNode = container.cloneNode(true);
-  boardSquare.parentNode.replaceChild(recreateNode, container);
-};
 
 checkForWinner = () => {
   if (
@@ -109,20 +95,23 @@ checkForWinner = () => {
       boardSquare[0].textContent === boardSquare[1].textContent &&
       boardSquare[1].textContent === boardSquare[2].textContent
     ) {
-      console.log(`${boardSquare[0].textContent} won!`);
-      removeClick();
+      gameResultMessage.textContent = `${boardSquare[0].textContent} won!`;
+      showGameOver();
+      return;
     } else if (
       boardSquare[0].textContent === boardSquare[3].textContent &&
       boardSquare[3].textContent === boardSquare[6].textContent
     ) {
-      console.log(`${boardSquare[0].textContent} won!`);
-      removeClick();
+      gameResultMessage.textContent = `${boardSquare[0].textContent} won!`;
+      showGameOver();
+      return;
     } else if (
       boardSquare[0].textContent === boardSquare[4].textContent &&
       boardSquare[4].textContent === boardSquare[8].textContent
     ) {
-      console.log(`${boardSquare[0].textContent} won!`);
-      removeClick();
+      gameResultMessage.textContent = `${boardSquare[0].textContent} won!`;
+      showGameOver();
+      return;
     }
   }
   if (
@@ -133,20 +122,23 @@ checkForWinner = () => {
       boardSquare[2].textContent === boardSquare[4].textContent &&
       boardSquare[4].textContent === boardSquare[6].textContent
     ) {
-      console.log(`${boardSquare[4].textContent} won!`);
-      removeClick();
+      gameResultMessage.textContent = `${boardSquare[4].textContent} won!`;
+      showGameOver();
+      return;
     } else if (
       boardSquare[1].textContent === boardSquare[4].textContent &&
       boardSquare[4].textContent === boardSquare[7].textContent
     ) {
-      console.log(`${boardSquare[4].textContent} won!`);
-      removeClick();
+      gameResultMessage.textContent = `${boardSquare[4].textContent} won!`;
+      showGameOver();
+      return;
     } else if (
       boardSquare[3].textContent === boardSquare[4].textContent &&
       boardSquare[4].textContent === boardSquare[5].textContent
     ) {
-      console.log(`${boardSquare[4].textContent} won!`);
-      removeClick();
+      gameResultMessage.textContent = `${boardSquare[4].textContent} won!`;
+      showGameOver();
+      return;
     }
   }
   if (
@@ -157,14 +149,57 @@ checkForWinner = () => {
       boardSquare[6].textContent === boardSquare[7].textContent &&
       boardSquare[7].textContent === boardSquare[8].textContent
     ) {
-      console.log(`${boardSquare[8].textContent} won!`);
-      removeClick();
+      gameResultMessage.textContent = `${boardSquare[8].textContent} won!`;
+      showGameOver();
+      return;
     } else if (
       boardSquare[2].textContent === boardSquare[5].textContent &&
       boardSquare[5].textContent === boardSquare[8].textContent
     ) {
-      console.log(`${boardSquare[8].textContent} won!`);
-      removeClick();
+      gameResultMessage.textContent = `${boardSquare[8].textContent} won!`;
+      showGameOver();
+      return;
     }
   }
+  if (whosTurnIsIt === 9) {
+    console.log("stop");
+    gameResultMessage.textContent = `Draw!`;
+    showGameOver();
+  }
 };
+
+showGameOver = () => {
+  gameOver.classList.toggle("game-over");
+  toggleVisibility();
+};
+
+toggleVisibility = () => {
+  if (
+    gameResultMessage.style.display === "" &&
+    restartButton.style.display === ""
+  ) {
+    gameResultMessage.style.display = "inline";
+    restartButton.style.display = "inline";
+  } else {
+    gameResultMessage.style.display = "";
+    restartButton.style.display = "";
+  }
+};
+
+restartGame = () => {
+  for (i = 0; i < boardSquare.length; i++) {
+    boardSquare[i].textContent = "";
+  }
+
+  //remove overlay
+  gameOver.classList.toggle("game-over");
+  // remove button
+
+  // remove winning text
+  toggleVisibility();
+
+  whosTurnIsIt = 0;
+  gameboard = [];
+};
+
+restartButton.addEventListener("click", restartGame);
