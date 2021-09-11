@@ -1,205 +1,234 @@
-const boardSquare = document.querySelectorAll(".board-square");
-const container = document.querySelectorAll("#container");
-const choiceButton = document.querySelectorAll(".choice-button");
-const playerChoiceIntro = document.querySelector(
-  "#player-instructions-container"
-);
-const displayBoard = document.querySelector("#container");
-const gameResultMessage = document.querySelector("#game-result-message");
-const gameOver = document.getElementById("restart-container");
-const restartButton = document.getElementById("restart-button");
+const displayController = (() => {
+  const choiceButton = document.querySelectorAll(".choice-button");
+  const displayBoard = document.querySelector("#container");
+  const gameResultMessage = document.querySelector("#game-result-message");
+  const restartButton = document.getElementById("restart-button");
+  const gameOver = document.getElementById("restart-container");
 
-let gameboard = [];
-let whosTurnIsIt = 0;
+  const gameIntro = (event) => {
+    const playerChoiceIntro = document.querySelector(
+      "#player-instructions-container"
+    );
+    playerChoiceIntro.style.cssText = "display: none";
+    choiceButton.forEach((button) =>
+      button.removeEventListener("click", gameIntro)
+    );
 
-const Player = (marker) => {
-  const turn = () => {
-    gameboard.push(marker);
+    displayBoard.style.cssText = "display: grid";
+
+    let whoIsFirst = event.target.value;
+
+    const playerPick = gameBoard.setPlayers(whoIsFirst);
+    gameController.startGame(playerPick);
+    return { whoIsFirst };
   };
-  return { turn };
-};
 
-setPlayers = (whoIsFirst) => {
-  if (whoIsFirst === "X") {
-    let player1 = Player("X");
-    let player2 = Player("O");
-    return [player1, player2];
-  } else if (whoIsFirst === "O") {
-    let player1 = Player("O");
-    let player2 = Player("X");
-    return [player1, player2];
-  }
-};
+  choiceButton.forEach((button) => button.addEventListener("click", gameIntro));
 
-gameIntro = (event) => {
-  playerChoiceIntro.style.cssText = "display: none";
-  choiceButton.forEach((button) =>
-    button.removeEventListener("click", gameIntro)
-  );
-
-  displayBoard.style.cssText = "display: grid";
-
-  let whoIsFirst = event.target.value;
-
-  const result = setPlayers(whoIsFirst);
-  start(result);
-};
-
-choiceButton.forEach((button) => button.addEventListener("click", gameIntro));
-
-// Player is pushing its marker into the Gameboard array
-// Created players
-
-function start(result) {
-  for (i = 0; i < boardSquare.length; i++) {
-    boardSquare[i].addEventListener("click", function (event) {
-      playGame(result, event);
-      console.log("im awake");
-    });
-  }
-}
-
-playGame = (result, event) => {
-  whosTurnIsIt++;
-
-  if (whosTurnIsIt % 2 === 0) {
-    result[1].turn();
-  } else result[0].turn();
-
-  addMarker(event);
-};
-
-// addMarker calls player to add marker into array, gets the div target of the click
-// and checks for winner
-
-function addMarker(event) {
-  const spot = event.target;
-  const spotNumber = spot.getAttribute("data-number");
-  if (
-    boardSquare[spotNumber].textContent === "X" ||
-    boardSquare[spotNumber].textContent === "O"
-  ) {
-    whosTurnIsIt--;
-    return;
-  }
-  boardSquare[spotNumber].textContent = gameboard[gameboard.length - 1];
-  checkForWinner();
-}
-
-checkForWinner = () => {
-  if (
-    boardSquare[0].textContent === "X" ||
-    boardSquare[0].textContent === "O"
-  ) {
+  const addMarker = (event) => {
+    const spot = event.target;
+    const spotNumber = spot.getAttribute("data-number");
     if (
-      boardSquare[0].textContent === boardSquare[1].textContent &&
-      boardSquare[1].textContent === boardSquare[2].textContent
+      gameBoard.boardSquare[spotNumber].textContent === "X" ||
+      gameBoard.boardSquare[spotNumber].textContent === "O"
     ) {
-      gameResultMessage.textContent = `${boardSquare[0].textContent} won!`;
-      showGameOver();
+      gameBoard.whosTurnIsIt--;
       return;
-    } else if (
-      boardSquare[0].textContent === boardSquare[3].textContent &&
-      boardSquare[3].textContent === boardSquare[6].textContent
-    ) {
-      gameResultMessage.textContent = `${boardSquare[0].textContent} won!`;
-      showGameOver();
-      return;
-    } else if (
-      boardSquare[0].textContent === boardSquare[4].textContent &&
-      boardSquare[4].textContent === boardSquare[8].textContent
-    ) {
-      gameResultMessage.textContent = `${boardSquare[0].textContent} won!`;
-      showGameOver();
-      return;
+    } else {
+      gameBoard.boardSquare[spotNumber].textContent =
+        gameBoard.board[gameBoard.board.length - 1];
+      gameController.checkForWinner();
     }
-  }
-  if (
-    boardSquare[4].textContent === "X" ||
-    boardSquare[4].textContent === "O"
-  ) {
+  };
+
+  const toggleVisibility = () => {
     if (
-      boardSquare[2].textContent === boardSquare[4].textContent &&
-      boardSquare[4].textContent === boardSquare[6].textContent
+      gameResultMessage.style.display === "" &&
+      restartButton.style.display === ""
     ) {
-      gameResultMessage.textContent = `${boardSquare[4].textContent} won!`;
-      showGameOver();
-      return;
-    } else if (
-      boardSquare[1].textContent === boardSquare[4].textContent &&
-      boardSquare[4].textContent === boardSquare[7].textContent
-    ) {
-      gameResultMessage.textContent = `${boardSquare[4].textContent} won!`;
-      showGameOver();
-      return;
-    } else if (
-      boardSquare[3].textContent === boardSquare[4].textContent &&
-      boardSquare[4].textContent === boardSquare[5].textContent
-    ) {
-      gameResultMessage.textContent = `${boardSquare[4].textContent} won!`;
-      showGameOver();
-      return;
+      gameResultMessage.style.display = "inline";
+      restartButton.style.display = "inline";
+    } else {
+      gameResultMessage.style.display = "";
+      restartButton.style.display = "";
     }
-  }
-  if (
-    boardSquare[8].textContent === "X" ||
-    boardSquare[8].textContent === "O"
-  ) {
+  };
+
+  const showGameOver = () => {
+    gameOver.classList.toggle("game-over");
+    toggleVisibility();
+  };
+
+  restartGame = () => {
+    for (i = 0; i < gameBoard.boardSquare.length; i++) {
+      gameBoard.boardSquare[i].textContent = "";
+    }
+
+    //remove overlay
+    gameOver.classList.toggle("game-over");
+    // remove button
+
+    // remove winning text
+    toggleVisibility();
+
+    gameBoard.whosTurnIsIt = 0;
+    board = [];
+  };
+
+  restartButton.addEventListener("click", restartGame);
+
+  return {
+    gameResultMessage,
+    gameIntro,
+    addMarker,
+    toggleVisibility,
+    showGameOver,
+    gameOver,
+  };
+})();
+
+const gameBoard = (() => {
+  const boardSquare = document.querySelectorAll(".board-square");
+  let board = [];
+  let whosTurnIsIt = 0;
+
+  const Player = (marker) => {
+    const turn = () => {
+      board.push(marker);
+    };
+    return { turn };
+  };
+
+  const setPlayers = (whoIsFirst) => {
+    if (whoIsFirst === "X") {
+      let player1 = Player("X");
+      let player2 = Player("O");
+      return [player1, player2];
+    } else if (whoIsFirst === "O") {
+      let player1 = Player("O");
+      let player2 = Player("X");
+      return [player1, player2];
+    }
+  };
+
+  return { Player, boardSquare, board, whosTurnIsIt, setPlayers };
+})();
+
+const gameController = (() => {
+  const startGame = (playerPick) => {
+    playGame = (playerPick, event) => {
+      gameBoard.whosTurnIsIt++;
+
+      if (gameBoard.whosTurnIsIt % 2 === 0) {
+        playerPick[1].turn();
+      } else playerPick[0].turn();
+
+      displayController.addMarker(event);
+    };
+
+    for (i = 0; i < gameBoard.boardSquare.length; i++) {
+      gameBoard.boardSquare[i].addEventListener("click", function (event) {
+        playGame(playerPick, event);
+      });
+    }
+  };
+
+  const checkForWinner = () => {
     if (
-      boardSquare[6].textContent === boardSquare[7].textContent &&
-      boardSquare[7].textContent === boardSquare[8].textContent
+      gameBoard.boardSquare[0].textContent === "X" ||
+      gameBoard.boardSquare[0].textContent === "O"
     ) {
-      gameResultMessage.textContent = `${boardSquare[8].textContent} won!`;
-      showGameOver();
-      return;
-    } else if (
-      boardSquare[2].textContent === boardSquare[5].textContent &&
-      boardSquare[5].textContent === boardSquare[8].textContent
-    ) {
-      gameResultMessage.textContent = `${boardSquare[8].textContent} won!`;
-      showGameOver();
-      return;
+      if (
+        gameBoard.boardSquare[0].textContent ===
+          gameBoard.boardSquare[1].textContent &&
+        gameBoard.boardSquare[1].textContent ===
+          gameBoard.boardSquare[2].textContent
+      ) {
+        displayController.gameResultMessage.textContent = `${gameBoard.boardSquare[0].textContent} won!`;
+        displayController.showGameOver();
+        return;
+      } else if (
+        gameBoard.boardSquare[0].textContent ===
+          gameBoard.boardSquare[3].textContent &&
+        gameBoard.boardSquare[3].textContent ===
+          gameBoard.boardSquare[6].textContent
+      ) {
+        displayController.gameResultMessage.textContent = `${gameBoard.boardSquare[0].textContent} won!`;
+        displayController.showGameOver();
+        return;
+      } else if (
+        gameBoard.boardSquare[0].textContent ===
+          gameBoard.boardSquare[4].textContent &&
+        gameBoard.boardSquare[4].textContent ===
+          gameBoard.boardSquare[8].textContent
+      ) {
+        displayController.gameResultMessage.textContent = `${gameBoard.boardSquare[0].textContent} won!`;
+        displayController.showGameOver();
+        return;
+      }
     }
-  }
-  if (whosTurnIsIt === 9) {
-    console.log("stop");
-    gameResultMessage.textContent = `Draw!`;
-    showGameOver();
-  }
-};
+    if (
+      gameBoard.boardSquare[4].textContent === "X" ||
+      gameBoard.boardSquare[4].textContent === "O"
+    ) {
+      if (
+        gameBoard.boardSquare[2].textContent ===
+          gameBoard.boardSquare[4].textContent &&
+        gameBoard.boardSquare[4].textContent ===
+          gameBoard.boardSquare[6].textContent
+      ) {
+        displayController.gameResultMessage.textContent = `${gameBoard.boardSquare[4].textContent} won!`;
+        displayController.showGameOver();
+        return;
+      } else if (
+        gameBoard.boardSquare[1].textContent ===
+          gameBoard.boardSquare[4].textContent &&
+        gameBoard.boardSquare[4].textContent ===
+          gameBoard.boardSquare[7].textContent
+      ) {
+        displayController.gameResultMessage.textContent = `${gameBoard.boardSquare[4].textContent} won!`;
+        displayController.showGameOver();
+        return;
+      } else if (
+        gameBoard.boardSquare[3].textContent ===
+          gameBoard.boardSquare[4].textContent &&
+        gameBoard.boardSquare[4].textContent ===
+          gameBoard.boardSquare[5].textContent
+      ) {
+        displayController.gameResultMessage.textContent = `${gameBoard.boardSquare[4].textContent} won!`;
+        displayController.showGameOver();
+        return;
+      }
+    }
+    if (
+      gameBoard.boardSquare[8].textContent === "X" ||
+      gameBoard.boardSquare[8].textContent === "O"
+    ) {
+      if (
+        gameBoard.boardSquare[6].textContent ===
+          gameBoard.boardSquare[7].textContent &&
+        gameBoard.boardSquare[7].textContent ===
+          gameBoard.boardSquare[8].textContent
+      ) {
+        displayController.gameResultMessage.textContent = `${boardSquare[8].textContent} won!`;
+        displayController.showGameOver();
+        return;
+      } else if (
+        gameBoard.boardSquare[2].textContent ===
+          gameBoard.boardSquare[5].textContent &&
+        gameBoard.boardSquare[5].textContent ===
+          gameBoard.boardSquare[8].textContent
+      ) {
+        displayController.gameResultMessage.textContent = `${gameBoard.boardSquare[8].textContent} won!`;
+        displayController.showGameOver();
+        return;
+      }
+    }
+    if (gameBoard.whosTurnIsIt === 9) {
+      displayController.gameResultMessage.textContent = `Draw!`;
+      displayController.showGameOver();
+    }
+  };
 
-showGameOver = () => {
-  gameOver.classList.toggle("game-over");
-  toggleVisibility();
-};
-
-toggleVisibility = () => {
-  if (
-    gameResultMessage.style.display === "" &&
-    restartButton.style.display === ""
-  ) {
-    gameResultMessage.style.display = "inline";
-    restartButton.style.display = "inline";
-  } else {
-    gameResultMessage.style.display = "";
-    restartButton.style.display = "";
-  }
-};
-
-restartGame = () => {
-  for (i = 0; i < boardSquare.length; i++) {
-    boardSquare[i].textContent = "";
-  }
-
-  //remove overlay
-  gameOver.classList.toggle("game-over");
-  // remove button
-
-  // remove winning text
-  toggleVisibility();
-
-  whosTurnIsIt = 0;
-  gameboard = [];
-};
-
-restartButton.addEventListener("click", restartGame);
+  return { startGame, checkForWinner };
+})();
